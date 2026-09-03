@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Basic clean structure */
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        #categories {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .linkAvailable {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .title {
+            font-weight: bold;
+        }
+
+        .url a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .url a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="link-parent">
+        <div id="categories">
+
+        </div>
+        <div id="links">
+
+        </div>
+    </div>
+    
+    <script>
+
+        async function deleteLink(linkId){
+            const url = "api/delete_link.php";
+
+                try{
+                    const response = await fetch(url ,{
+                        method : "POST",
+                        headers : {
+                            "Content-Type" : "application/json"
+                        },
+                        body: JSON.stringify({
+                            id: linkId
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if(response.ok){//201
+                        console.log("Deletion Completed");
+                        loadLinks();
+                        
+                    }
+
+                }catch(error){
+
+                }
+        }
+
+        function showCategory(categoryToShow){
+            const linksAvailable = document.querySelectorAll(".linkAvailable");
+            if(categoryToShow == "All"){
+                linksAvailable.forEach(link =>{
+                    if(link.classList.contains("hidden")){
+                        link.classList.remove("hidden");
+                    }
+                    
+                });
+
+            }else{
+                
+                linksAvailable.forEach(link =>{
+                    if(!link.classList.contains("hidden")){
+                        link.classList.add("hidden");
+                    }
+                    
+                });
+
+                linksAvailable.forEach(link =>{
+                    if(link.classList.contains(categoryToShow)){
+                        link.classList.remove("hidden");
+                    }
+                    
+            });
+
+            }
+            
+  
+        }
+
+        function generateDashboardLinks(links, categories) {
+            const linkContainer = document.querySelector("#links");
+            const categoryContainer = document.querySelector("#categories");
+            
+            linkContainer.innerHTML = '';
+            categoryContainer.innerHTML = '';
+
+            // Render category filter buttons
+            categories.forEach(category => {
+                // Supports both string array ["Tech"] or object array [{category: "Tech"}]
+                const catName = typeof category === 'object' ? category.category : category;
+                
+                const btn = document.createElement("button");
+                btn.textContent = catName;
+                btn.onclick = () => showCategory(`show-${catName}`);
+                categoryContainer.appendChild(btn);
+            });
+
+            // "All" filter button
+            const allBtn = document.createElement("button");
+            allBtn.textContent = "All";
+            allBtn.onclick = () => showCategory("All");
+            categoryContainer.appendChild(allBtn);
+
+            // Render link cards
+            links.forEach(link => {
+                const card = document.createElement("div");
+                card.className = `show-${link.category} linkAvailable`;
+
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "link-info";
+
+                const titleDiv = document.createElement("div");
+                titleDiv.className = "title";
+                titleDiv.textContent = link.title;
+
+                const urlDiv = document.createElement("div");
+                urlDiv.className = "url";
+                
+                const anchor = document.createElement("a");
+                anchor.href = link.url;
+                anchor.target = "_blank"; // Opens in a new tab
+                anchor.textContent = link.url;
+                urlDiv.appendChild(anchor);
+
+                infoDiv.appendChild(titleDiv);
+                infoDiv.appendChild(urlDiv);
+
+                const delBtn = document.createElement("button");
+                delBtn.textContent = "Delete";
+                delBtn.onclick = () => deleteLink(link.id);
+
+                card.appendChild(infoDiv);
+                card.appendChild(delBtn);
+
+                linkContainer.appendChild(card);
+            });
+        }
+        async function loadLinks(){
+                const url = "api/get_links.php";
+
+                try{
+                    const response = await fetch(url ,{
+                        method : "GET"
+                    });
+
+                    const result = await response.json();
+
+                    if(response.ok){//201
+                        console.log("OK");
+                        generateDashboardLinks(result.links,result.categories);
+                    }
+
+                }catch(error){
+
+                }
+
+            }
+        
+        document.addEventListener("DOMContentLoaded",(event) => {
+            
+            
+            loadLinks();
+        });
+    </script>
+</body>
+</html>
