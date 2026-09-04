@@ -6,7 +6,8 @@ A lightweight full-stack web application designed to save, manage, and filter we
 
 ## 📷 App Preview
 
-![App Screenshot](readmeimage/readme.png)
+
+![App Screenshot](https://github.com/dreidjo/portfolio-personal-link/blob/main/readmeImage/readme.png)
 
 ---
 
